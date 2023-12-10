@@ -5,12 +5,14 @@ import random
 class TypingGame:
     def __init__(self):
         # ウィンドウのサイズとタイトルを設定
-        pyxel.init(500,300 )
-        self.odai_list = ["typing","game","minecraft","python"]  # ここでcurrent_wordを定義
+        pyxel.init(500,300)
+        pyxel.mouse(True)
+        
+        # お題の文章リストを初期化する
+        self.odai_list = ["typing","game","minecraft","python"]
         self.typed_word = ""
         self.is_correct = True
-        # 他の初期化処理
-        
+        # ビットマップフォントをロードする
         self.font = BDFRenderer("assets/font/umplus_j12r.bdf")
         # ゲームの状態を管理する変数
         self.game_state = "title"
