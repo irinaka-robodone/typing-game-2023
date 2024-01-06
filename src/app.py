@@ -2,6 +2,27 @@ import pyxel
 from text import BDFRenderer
 import random
 
+class Character:
+    def __init__(self, name, max_hp):
+        self.name = name
+        self.max_hp = max_hp
+        self.current_hp = max_hp
+        
+    def take_damage(self, damage):
+        self.current_hp -= damage
+        if self.current_hp < 0:
+            self.current_hp = 0
+        print(f"{self.name} took {damage} damage! Current HP: {self.current_hp}")
+
+    def is_defeated(self):
+        return self.current_hp <= 0
+
+
+# キャラクターの例
+
+# キャラクターにダメージを与える
+# character.take_damage(20)
+
 class TypingGame:
     def __init__(self):
         # ウィンドウのサイズとタイトルを設定
@@ -19,11 +40,11 @@ class TypingGame:
         self.selected_character = None
         self.current_selection = 0
         self.character_details = {
-        "炎": "熱い",
-        "水": "涼しい",
-        "雷":"速い",
-        "闇":"暗い",
-        "光":"眩しい",
+        "炎":{"特徴":"熱い",  "HP":100}, 
+        "水":{"特徴":"涼しい","HP":140},
+        "雷":{"特徴":"速い",  "HP":90},
+        "闇":{"特徴":"暗い",  "HP":110},
+        "光":{"特徴":"眩しい","HP":120},
         }
         self.reset_game()
         # Pyxelアプリを開始
@@ -66,6 +87,9 @@ class TypingGame:
             self.font.draw_text(220,60,self.typed_word,6 if self.is_correct else 8)
             # pyxel.text(220, 60, self.typed_word, 11 if self.is_correct else 8)
             
+
+            
+            
         if self.game_state == "title":
             # タイトル画面の描画
             pyxel.text(50, 40, "タイトル画面", 7)
@@ -78,11 +102,20 @@ class TypingGame:
                 
             selected_character = self.characters[self.current_selection]
             self.draw_character_detail(selected_character)
+            
 
 
         elif self.game_state == "game":
             # タイピング画面の描画
-            self.font.draw_text(0, 80, f"選択されたキャラクター: {self.selected_character}", 7)
+            self.font.draw_text(0, 80, f"選択されたキャラクター: {self.player.name}", 7)
+            # character = Character("炎", 100)
+            # character = Character("水", 140)
+            # character = Character("雷", 90)
+            # character = Character("闇", 110)
+            # character = Character("光", 120)
+            hp = self.player.current_hp
+            self.font.draw_text(90,100,str(hp),11)
+            self.font.draw_text(48,100,"残りHP:",11)
         # if self.game_state == "select_character":
         # # キャラクターのリストを描画
         #     for i, character in enumerate(self.characters):
@@ -90,6 +123,7 @@ class TypingGame:
         #         pyxel.text(10, 10 + i * 10, character, color)
                 
         #     self.draw_character_detail(self.characters[self.current_selection])
+        
 
     def handle_input(self):
         # if not self.is_correct:
@@ -111,6 +145,7 @@ class TypingGame:
                     if char == expected_char:
                         self.typed_word += char
                         self.is_correct = True
+                        self.player.take_damage(10)
                     else:
                         self.is_correct = False
                 if self.typed_word == self.current_word:
@@ -123,16 +158,23 @@ class TypingGame:
         elif pyxel.btnp(pyxel.KEY_RIGHT):
             self.current_selection = min(len(self.characters) - 1, self.current_selection + 1)
         elif pyxel.btnp(pyxel.KEY_RETURN):
-            self.selected_character = self.characters[self.current_selection]
+            name = self.characters[self.current_selection]
+            hp = self.character_details[name]["HP"]
+            self.player = Character(name, hp)
             self.game_state = "game"
+            
     
     def draw_character_detail(self, character):
-        detail = self.character_details[character]
+        detail = self.character_details[character]["特徴"]
         x, y = 190, 220  # 吹き出しの位置
         width, height = 140, 50  # 吹き出しのサイズ
 
         # 吹き出しの描画（四角形とテキスト）
         pyxel.rect(x, y, width, height, 7)  # 白い背景
         self.font.draw_text(x + 5, y + 5, detail, 0)  # 黒いテキスト
+
+
+
+
 # ゲームを開始
 TypingGame()
