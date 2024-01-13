@@ -168,6 +168,10 @@ class TypingGame:
         detail = self.character_details[character]["特徴"]
         x, y = 190, 220  # 吹き出しの位置
         width, height = 140, 50  # 吹き出しのサイズ
+    def draw_character_detail(self,character):
+        detail= self.character_details[character]["HP"]
+        x,y = 210,220
+        width,height
 
         # 吹き出しの描画（四角形とテキスト）
         pyxel.rect(x, y, width, height, 7)  # 白い背景
