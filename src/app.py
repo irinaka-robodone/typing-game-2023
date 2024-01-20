@@ -20,6 +20,13 @@ class Enemy(Character):
     def __init__(self, name, hp, max_hp: int = None):
         super().__init__(name, hp, hp)
         
+    def take_damage(self, damage):
+        self.current_hp -= damage
+        if self.current_hp <= 0:
+            self.current_hp=0
+            print(f"{self.name} took {damage} damage! Current HP: {self.current_hp}")
+
+        
     
 class Player(Character):
     def __init__(self, name, hp, max_hp: int = None):
@@ -74,10 +81,15 @@ class TypingGame:
         
         if self.game_state == "game":
             self.handle_input()
-        
-        # self.enemy.update()
-        
-        
+            # # ここにゲームプレイのロジックを実装
+            # # 例: プレイヤーが攻撃を行った場合、敵のHPを減らす
+            # if pyxel.btnp(pyxel.KEY_SPACE):  # スペースキーで攻撃
+            #     if self.enemy.take_damage(10):  # 敵に10のダメージ
+                    
+        if self.game_state == "won":
+            """"""
+        if self.game_state == "lose":
+            """"""
 
     def draw(self):
         pyxel.cls(0) # 画面をクリア
@@ -89,7 +101,7 @@ class TypingGame:
             self.font.draw_text(200, 160, "Enterを押して開始",pyxel.frame_count % 16)
         # ゲーム画面の描画（ここでは仮に設定）
         elif self.game_state == "game":
-            self.font.draw_text(50, 60, "ゲーム中...", 7)
+            # self.font.draw_text(50, 60, "ゲーム中...", 7)
             # pyxel.cls(0)
         
             self.font.draw_text(220,40,self.current_word, 7)
@@ -125,9 +137,14 @@ class TypingGame:
             hp = self.player.current_hp
             self.font.draw_text(90,100,str(hp),11)
             self.font.draw_text(48,100,"残りHP:",11)
-            self.font.draw_text(200,100,str(self.enemy.current_hp),11)
-            self.font.draw_text(200,90,self.enemy.name,11)
-            self.font.draw_text(158,100,"残りHP:",11)
+            self.font.draw_text(400,100,str(self.enemy.current_hp),11)
+            self.font.draw_text(390,80,self.enemy.name,11)
+            self.font.draw_text(355,100,"残りHP:",11)
+        elif self.game_state == "won":
+            # 勝利画面の描画
+            self.font.draw_text(190, 100, "W        I        N", pyxel.frame_count % 16)
+        elif self.game_state == "lose":
+            self.font.draw_text(170, 100, "L        O        S        E", pyxel.frame_count % 16)
         # if self.game_state == "select_character":
         # # キャラクターのリストを描画
         #     for i, character in enumerate(self.characters):
@@ -157,7 +174,13 @@ class TypingGame:
                     if char == expected_char:
                         self.typed_word += char
                         self.is_correct = True
-                        self.player.take_damage(10)
+                        self.enemy.take_damage(30)
+                        if self.enemy.current_hp == 0:
+                            self.game_state = "won"
+                        self.player.take_damage(20)
+                        if self.player.current_hp == 0:
+                            self.game_state = "lose"
+
                     else:
                         self.is_correct = False
                 if self.typed_word == self.current_word:
@@ -195,8 +218,8 @@ class TypingGame:
         # 吹き出しの描画（四角形とテキスト）
         pyxel.rect(x, y, width, height, 7)  # 白い背景
         self.font.draw_text(x + 5, y + 5, detail, 0)  # 黒いテキスト
-        self.font.draw_text(x + 40,y + 5,"HP:",0)
-        self.font.draw_text(x + 55,y + 5,str(hp),0)
+        self.font.draw_text(x + 50,y + 5,"HP:",0)
+        self.font.draw_text(x + 70,y + 5,str(hp),0)
 
 
 
