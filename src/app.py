@@ -1,6 +1,7 @@
 import pyxel
 from text import BDFRenderer
 import random
+import time
 
 class Character():
     def __init__(self, name: str, hp: int, max_hp: int = None):
@@ -33,6 +34,7 @@ class Player(Character):
         super().__init__(name, hp, hp)
         
         
+
 class TypingGame:
     def __init__(self):
         # ウィンドウのサイズとタイトルを設定
@@ -59,6 +61,9 @@ class TypingGame:
         # pyxel.init(160, 120, caption="TypingGame")
         # self.enemy = Enemy(50, 50, 10)  # 敵キャラクターの初期化
         # pyxel.run(self.update, self.draw)
+        # pyxel.init(160, 120, caption="HP Decrease Over Time")
+        self.hp_decrease_interval = 1  # HPが減少する間隔（フレーム数）
+        
         
         self.reset_game()
         # Pyxelアプリを開始
@@ -86,6 +91,10 @@ class TypingGame:
             # if pyxel.btnp(pyxel.KEY_SPACE):  # スペースキーで攻撃
             #     if self.enemy.take_damage(10):  # 敵に10のダメージ
                     
+            current_time = time.time()
+            if current_time - self.last_decrease_time >= self.hp_decrease_interval:
+                self.player.take_damage(1)  # HPを1減少させる
+                self.last_decrease_time = current_time
         if self.game_state == "won":
             """"""
         if self.game_state == "lose":
@@ -103,13 +112,12 @@ class TypingGame:
         elif self.game_state == "game":
             # self.font.draw_text(50, 60, "ゲーム中...", 7)
             # pyxel.cls(0)
-        
             self.font.draw_text(220,40,self.current_word, 7)
             self.font.draw_text(220,60,self.typed_word,6 if self.is_correct else 8)
             # pyxel.text(220, 60, self.typed_word, 11 if self.is_correct else 8)
             
-
-            
+            pyxel.rect(10, 10, 200, 20, 10)
+            pyxel.rect(12, 12, int(186 *self.player.current_hp/100) , 16, 6)
             
         if self.game_state == "title":
             # タイトル画面の描画
@@ -174,19 +182,22 @@ class TypingGame:
                     if char == expected_char:
                         self.typed_word += char
                         self.is_correct = True
-                        self.enemy.take_damage(30)
+                        self.enemy.take_damage(10)
                         if self.enemy.current_hp == 0:
                             self.game_state = "won"
-                        self.player.take_damage(20)
+                        # self.player.take_damage(20)
                         if self.player.current_hp == 0:
                             self.game_state = "lose"
 
                     else:
                         self.is_correct = False
-                if self.typed_word == self.current_word:
-                    print("dou?")
-                    self.reset_game()
-
+                        
+                        print("dou?")
+                        self.player.take_damage(10)
+                        if self.player.current_hp == 0:
+                            self.game_state = "lose"
+                        # self.reset_game()
+                    
     def handle_character_selection(self):
         if pyxel.btnp(pyxel.KEY_LEFT):
             self.current_selection = max(0, self.current_selection - 1)
@@ -204,6 +215,7 @@ class TypingGame:
             self.player = Player(name, hp)
             self.enemy = Enemy(enemny_name,enemy_hp)
             self.game_state = "game"
+            self.last_decrease_time = time.time()
             
     
     def draw_character_detail(self, character):
