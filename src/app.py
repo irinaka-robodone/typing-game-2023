@@ -4,9 +4,11 @@ import random
 import time
 
 class Character():
-    def __init__(self, name: str, hp: int, max_hp: int = None):
+    def __init__(self, name: str, hp: int, max_hp: int, attack):
         self.name = name
         self.current_hp = hp
+        self.max_hp = max_hp
+        self.attack = attack
         
     def take_damage(self, damage):
         self.current_hp -= damage
@@ -18,8 +20,8 @@ class Character():
         return self.current_hp <= 0
 
 class Enemy(Character):
-    def __init__(self, name, hp, max_hp: int = None):
-        super().__init__(name, hp, hp)
+    def __init__(self, name, hp, max_hp: int,attack):
+        super().__init__(name, hp ,max_hp,attack )
         
     def take_damage(self, damage):
         self.current_hp -= damage
@@ -30,8 +32,8 @@ class Enemy(Character):
         
     
 class Player(Character):
-    def __init__(self, name, hp, max_hp: int = None):
-        super().__init__(name, hp, hp)
+    def __init__(self, name, hp, max_hp: int,attack):
+        super().__init__(name, hp,max_hp,attack )
         
         
 
@@ -52,11 +54,11 @@ class TypingGame:
         self.selected_character = None
         self.current_selection = 0
         self.character_details = {
-        "炎":{"特徴":"熱い",  "HP":100}, 
-        "水":{"特徴":"涼しい","HP":140},
-        "雷":{"特徴":"速い",  "HP":90},
-        "闇":{"特徴":"暗い",  "HP":110},
-        "光":{"特徴":"眩しい","HP":120},
+        "炎":{"特徴":"熱い",  "HP":100,"Max_hp":100,"attack":10}, 
+        "水":{"特徴":"涼しい","HP":140,"Max_hp":140,"attack":5},
+        "雷":{"特徴":"速い",  "HP":90,"Max_hp":90,"attack":15},
+        "闇":{"特徴":"暗い",  "HP":110,"Max_hp":110,"attack":8},
+        "光":{"特徴":"眩しい","HP":120,"Max_hp":120,"attack":7},
         }
         # pyxel.init(160, 120, caption="TypingGame")
         # self.enemy = Enemy(50, 50, 10)  # 敵キャラクターの初期化
@@ -65,12 +67,12 @@ class TypingGame:
         self.hp_decrease_interval = 1  # HPが減少する間隔（フレーム数）
         
         
-        self.reset_game()
+        self.update_odai()
         # Pyxelアプリを開始
         pyxel.run(self.update, self.draw)
 
 
-    def reset_game(self):
+    def update_odai(self):
         self.current_word = random.choice(self.odai_list)  # ランダムな単語を選択
         self.typed_word = ""
 
@@ -86,6 +88,13 @@ class TypingGame:
         
         if self.game_state == "game":
             self.handle_input()
+            if self.typed_word == self.current_word:
+                self.update_odai()
+            if self.enemy.current_hp == 0:
+                self.game_state = "won"
+            # self.player.take_damage(20)
+            if self.player.current_hp == 0:
+                self.game_state = "lose"
             # # ここにゲームプレイのロジックを実装
             # # 例: プレイヤーが攻撃を行った場合、敵のHPを減らす
             # if pyxel.btnp(pyxel.KEY_SPACE):  # スペースキーで攻撃
@@ -116,8 +125,11 @@ class TypingGame:
             self.font.draw_text(220,60,self.typed_word,6 if self.is_correct else 8)
             # pyxel.text(220, 60, self.typed_word, 11 if self.is_correct else 8)
             
-            pyxel.rect(10, 10, 200, 20, 10)
-            pyxel.rect(12, 12, int(186 *self.player.current_hp/100) , 16, 6)
+            pyxel.rect(5, 10, 200, 20, 7)
+            pyxel.rect(7, 12, int(186 *self.player.current_hp/self.player.max_hp) , 16, 6)
+            pyxel.rect(280,10,200,20,7)
+            pyxel.rect(280,12,int(186*self.enemy.current_hp/self.enemy.max_hp),16,6)
+            
             
         if self.game_state == "title":
             # タイトル画面の描画
@@ -182,21 +194,16 @@ class TypingGame:
                     if char == expected_char:
                         self.typed_word += char
                         self.is_correct = True
-                        self.enemy.take_damage(10)
-                        if self.enemy.current_hp == 0:
-                            self.game_state = "won"
-                        # self.player.take_damage(20)
-                        if self.player.current_hp == 0:
-                            self.game_state = "lose"
+                        self.enemy.take_damage(self.player.attack)
 
                     else:
                         self.is_correct = False
                         
                         print("dou?")
-                        self.player.take_damage(10)
+                        self.player.take_damage(self.enemy.attack)
                         if self.player.current_hp == 0:
                             self.game_state = "lose"
-                        # self.reset_game()
+                        
                     
     def handle_character_selection(self):
         if pyxel.btnp(pyxel.KEY_LEFT):
@@ -211,16 +218,22 @@ class TypingGame:
             # print("enemy_name: ", enemny_name)
             # print("candidates:", self.character_details)
             hp = self.character_details[name]["HP"]
+            max_hp = self.character_details[name]["Max_hp"]
+            attack = self.character_details[name]["attack"]
             enemy_hp = self.character_details[enemny_name]["HP"]
-            self.player = Player(name, hp)
-            self.enemy = Enemy(enemny_name,enemy_hp)
+            enemny_max_hp = self.character_details[enemny_name]["Max_hp"]
+            enemy_atttack = self.character_details[enemny_name]["attack"]
+            self.player = Player(name, hp,max_hp,attack )
+            self.enemy = Enemy(enemny_name,enemy_hp,enemny_max_hp,enemy_atttack)
             self.game_state = "game"
             self.last_decrease_time = time.time()
             
     
     def draw_character_detail(self, character):
-        detail = self.character_details[character]["特徴"]
-        hp = self.character_details[character]["HP"]
+        chara_dict = self.character_details[character]
+        detail = chara_dict["特徴"]
+        hp = chara_dict["HP"]
+        attack = chara_dict["attack"]
         x, y = 190, 220  # 吹き出しの位置
         width, height = 140, 50  # 吹き出しのサイズ
         # detail= self.character_details[character]["HP"]
@@ -232,6 +245,8 @@ class TypingGame:
         self.font.draw_text(x + 5, y + 5, detail, 0)  # 黒いテキスト
         self.font.draw_text(x + 50,y + 5,"HP:",0)
         self.font.draw_text(x + 70,y + 5,str(hp),0)
+        self.font.draw_text(x + 5, y + 20,"攻撃力:",0)
+        self.font.draw_text(x + 50,y + 20,str(attack),0)
 
 
 
