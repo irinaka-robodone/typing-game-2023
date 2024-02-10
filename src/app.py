@@ -3,6 +3,15 @@ from text import BDFRenderer
 import random
 import time
 
+# ↓ステージ構想↓
+# キャラクター選択画面とゲーム画面の間にステージ選択画面ありけり
+# ステージは４個＋１個あります、４個は四天王となっています彼らは一人一人が固有の能力を持っています、四天王は誰からでも倒すことができます
+# １個はラスボスとなっており四天王をすべて倒すとラスボスに挑むことができます
+# 四天王１→！間違えたら即死ステージ！間違えたら８０ダメージくらうぞ！！！さらに敵の体力は多いぞ（２５０ぐらい）、間違えずにできるのか！
+# 四天王２→！スピード勝負！時間経過で食らうダメージが８ダメージだ！その代わりに体力が少なめだ（１８０ぐらい）、速く打てるのか！
+# 四天王３→！無限に続く戦い！相手は一定時間で体力を回復するぞ！体力は（２００ぐらい）
+# 四天王４→！自分との闘い！相手は自分！？ステータスがミラーされているぞ
+# ボス→全体的なステータス全て高い
 class Character():
     def __init__(self, name: str, hp: int, max_hp: int, attack):
         self.name = name
@@ -60,6 +69,10 @@ class TypingGame:
         "闇":{"特徴":"暗い",  "HP":110,"Max_hp":110,"attack":8},
         "光":{"特徴":"眩しい","HP":120,"Max_hp":120,"attack":7},
         }
+        
+        
+        
+
         # pyxel.init(160, 120, caption="TypingGame")
         # self.enemy = Enemy(50, 50, 10)  # 敵キャラクターの初期化
         # pyxel.run(self.update, self.draw)
@@ -85,6 +98,9 @@ class TypingGame:
         elif self.game_state == "select_character":
             self.handle_character_selection()
             # self.game_state = "game"
+            
+        if self.game_state == "select_stage":
+            self.handle_stage_selection()
         
         if self.game_state == "game":
             self.handle_input()
@@ -143,9 +159,10 @@ class TypingGame:
                 
             selected_character = self.characters[self.current_selection]
             self.draw_character_detail(selected_character)
-    
-
-
+            
+        elif self.game_state == "select_stage":
+            self.draw_select_stage()
+            
         elif self.game_state == "game":
             # タイピング画面の描画
             self.font.draw_text(0, 80, f"選択されたキャラクター: {self.player.name}", 7)
@@ -225,8 +242,17 @@ class TypingGame:
             enemy_atttack = self.character_details[enemny_name]["attack"]
             self.player = Player(name, hp,max_hp,attack )
             self.enemy = Enemy(enemny_name,enemy_hp,enemny_max_hp,enemy_atttack)
-            self.game_state = "game"
+            self.game_state = "select_stage"
             self.last_decrease_time = time.time()
+    
+    def handle_stage_selection(self):
+        if pyxel.btnp(pyxel.KEY_LEFT):
+            self.current_stage_selection = max(0,self.current_stage_selection - 1)
+        elif pyxel.btnp(pyxel.KEY_RIGHT):
+            self.current_stage_selection = min(len(self.stage) - 1,self.current_stage_selection + 1)
+        elif pyxel.btnp(pyxel.KEY_RETURN):
+            self.stage.pop(self.current_stage_selection)
+            self.game_state= "game"
             
     
     def draw_character_detail(self, character):
@@ -247,9 +273,6 @@ class TypingGame:
         self.font.draw_text(x + 70,y + 5,str(hp),0)
         self.font.draw_text(x + 5, y + 20,"攻撃力:",0)
         self.font.draw_text(x + 50,y + 20,str(attack),0)
-
-
-
 
 # ゲームを開始
 TypingGame()
