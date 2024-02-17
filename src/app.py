@@ -49,8 +49,9 @@ class Player(Character):
 class TypingGame:
     def __init__(self):
         # ウィンドウのサイズとタイトルを設定
-        pyxel.init(500,300 )
-        self.odai_list = ["typing","game","minecraft","python"]  # ここでcurrent_wordを定義
+        self.SCREEN_SIZE = (500, 300)
+        pyxel.init(self.SCREEN_SIZE[0], self.SCREEN_SIZE[1])
+        self.odai_list = ["typing","game","minecraft","python","thelegendofzelda","splatoon","grandtheftauto","google","logicool","steam","steelseries","apexlegends","fortnite","subnautica","citysskyline"]  # ここでcurrent_wordを定義
         self.typed_word = ""
         self.is_correct = True
         # 他の初期化処理
@@ -63,14 +64,22 @@ class TypingGame:
         self.selected_character = None
         self.current_selection = 0
         self.character_details = {
-        "炎":{"特徴":"熱い",  "HP":100,"Max_hp":100,"attack":10}, 
-        "水":{"特徴":"涼しい","HP":140,"Max_hp":140,"attack":5},
-        "雷":{"特徴":"速い",  "HP":90,"Max_hp":90,"attack":15},
-        "闇":{"特徴":"暗い",  "HP":110,"Max_hp":110,"attack":8},
-        "光":{"特徴":"眩しい","HP":120,"Max_hp":120,"attack":7},
+        "炎":{"特徴":"熱い",  "HP":350,"Max_hp":350,"attack":2}, 
+        "水":{"特徴":"涼しい","HP":400,"Max_hp":400,"attack":1},
+        "雷":{"特徴":"速い",  "HP":450,"Max_hp":450,"attack":5},
+        "闇":{"特徴":"暗い",  "HP":550,"Max_hp":550,"attack":4},
+        "光":{"特徴":"眩しい","HP":600,"Max_hp":600,"attack":6},
         }
-        
-        
+        self.stages=["1","2","3","4","5"]
+        self.selected_stages = None
+        self.current_stage_selection = 0
+        self.stages_details ={
+        "1":{"ギミック":"間違えたら即死"},
+        "2":{"ギミック":"スピード勝負"},
+        "3":{"ギミック":"無限に続く戦い"},
+        "4":{"ギミック":"自分との戦い"},
+        "5":{"ギミック":"最後の戦い"},    
+        }
         
 
         # pyxel.init(160, 120, caption="TypingGame")
@@ -161,11 +170,16 @@ class TypingGame:
             self.draw_character_detail(selected_character)
             
         elif self.game_state == "select_stage":
-            self.draw_select_stage()
+            for i,stages in enumerate(self.stages):
+                color = 7 if i ==self.current_stage_selection else 6
+                self.font.draw_text(20+ i * 100,10,stages,color)
+            selected_stage = self.stages[self.current_stage_selection]
+            self.draw_stage_detail(selected_stage)
             
         elif self.game_state == "game":
             # タイピング画面の描画
             self.font.draw_text(0, 80, f"選択されたキャラクター: {self.player.name}", 7)
+            self.font.draw_text(0, self.SCREEN_SIZE[1] - 20, str(self.stages_details[self.selected_stage]), 7)
             # character = Character("炎", 100)
             # character = Character("水", 140)
             # character = Character("雷", 90)
@@ -249,9 +263,11 @@ class TypingGame:
         if pyxel.btnp(pyxel.KEY_LEFT):
             self.current_stage_selection = max(0,self.current_stage_selection - 1)
         elif pyxel.btnp(pyxel.KEY_RIGHT):
-            self.current_stage_selection = min(len(self.stage) - 1,self.current_stage_selection + 1)
-        elif pyxel.btnp(pyxel.KEY_RETURN):
-            self.stage.pop(self.current_stage_selection)
+            self.current_stage_selection = min(len(self.stages) - 1,self.current_stage_selection + 1)
+        elif pyxel.btnp(pyxel.KEY_DOWN):
+            self.stages.pop(self.current_stage_selection)
+            self.selected_stage = self.stages[self.current_stage_selection]
+            print("kita?")
             self.game_state= "game"
             
     
@@ -273,6 +289,17 @@ class TypingGame:
         self.font.draw_text(x + 70,y + 5,str(hp),0)
         self.font.draw_text(x + 5, y + 20,"攻撃力:",0)
         self.font.draw_text(x + 50,y + 20,str(attack),0)
+    
+    def draw_stage_detail(self,stages):
+        stages_dict =self.stages_details[stages]
+        stages_detail =stages_dict["ギミック"]
+        x,y =190,220
+        width, height =140,50
+        pyxel.rect(x, y, width, height, 7)  # 白い背景
+        self.font.draw_text(x + 35, y + 5, stages_detail, 0)  # 黒いテキスト
+        self.font.draw_text(x + 5,y + 5,"内容:",0)
+        
+    
 
 # ゲームを開始
 TypingGame()
