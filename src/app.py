@@ -37,9 +37,8 @@ class Enemy(Character):
         if self.current_hp <= 0:
             self.current_hp=0
             print(f"{self.name} took {damage} damage! Current HP: {self.current_hp}")
-
         
-    
+
 class Player(Character):
     def __init__(self, name, hp, max_hp: int,attack):
         super().__init__(name, hp,max_hp,attack )
@@ -65,21 +64,23 @@ class TypingGame:
         self.current_selection = 0
         self.character_details = {
         "炎":{"特徴":"熱い",  "HP":350,"Max_hp":350,"attack":2}, 
-        "水":{"特徴":"涼しい","HP":400,"Max_hp":400,"attack":1},
-        "雷":{"特徴":"速い",  "HP":450,"Max_hp":450,"attack":5},
-        "闇":{"特徴":"暗い",  "HP":550,"Max_hp":550,"attack":4},
-        "光":{"特徴":"眩しい","HP":600,"Max_hp":600,"attack":6},
+        "水":{"特徴":"涼しい","HP":4,"Max_hp":400,"attack":1},
+        "雷":{"特徴":"速い",  "HP":4,"Max_hp":450,"attack":5},
+        "闇":{"特徴":"暗い",  "HP":5,"Max_hp":550,"attack":4},
+        "光":{"特徴":"眩しい","HP":600,"Max_hp":600,"attack":100},
         }
         self.stages=["1","2","3","4","5"]
-        self.selected_stages = None
+        self.selected_stage = None
         self.current_stage_selection = 0
         self.stages_details ={
-        "1":{"ギミック":"間違えたら即死"},
-        "2":{"ギミック":"スピード勝負"},
-        "3":{"ギミック":"無限に続く戦い"},
-        "4":{"ギミック":"自分との戦い"},
-        "5":{"ギミック":"最後の戦い"},    
+        "1":{"ギミック":"間違えたら即死", "enemy_name": "四天王１","enemy_hp":400,"enemy_max_hp":400,"enemy_attack":10,"damage":5,"heal":0},
+        "2":{"ギミック":"スピード勝負","enemy_name":"四天王２","enemy_hp":400,"enemy_max_hp":400,"enemy_attack":10,"damage":1,"heal":0},
+        "3":{"ギミック":"無限に続く戦い","enemy_name":"四天王３","enemy_hp":400,"enemy_max_hp":400,"enemy_attack":10,"damage":5,"heal":10},
+        "4":{"ギミック":"自分との戦い","enemy_name":"四天王４","enemy_hp":400,"enemy_max_hp":400,"enemy_attack":10,"damage":5,"heal":0},
+        "5":{"ギミック":"最後の戦い","enemy_name":"ラスボス","enemy_hp":1500,"enemy_max_hp":1500,"enemy_attack":20,"damage":20,"heal":10},
         }
+        
+        
         
 
         # pyxel.init(160, 120, caption="TypingGame")
@@ -194,6 +195,11 @@ class TypingGame:
         elif self.game_state == "won":
             # 勝利画面の描画
             self.font.draw_text(190, 100, "W        I        N", pyxel.frame_count % 16)
+            self.font.draw_text(190, 120, "Enterキーを押してね", pyxel.frame_count % 16)
+            if pyxel.btnp(pyxel.KEY_RETURN) :
+                self.game_state = "select_stage"
+            else:
+                pass
         elif self.game_state == "lose":
             self.font.draw_text(170, 100, "L        O        S        E", pyxel.frame_count % 16)
         # if self.game_state == "select_character":
@@ -245,17 +251,12 @@ class TypingGame:
             name = self.characters[self.current_selection]
             self.characters.pop(self.current_selection)
             # print("enemy id: ", self.current_selection + 1)
-            enemny_name = random.choice(self.characters)
             # print("enemy_name: ", enemny_name)
             # print("candidates:", self.character_details)
             hp = self.character_details[name]["HP"]
             max_hp = self.character_details[name]["Max_hp"]
             attack = self.character_details[name]["attack"]
-            enemy_hp = self.character_details[enemny_name]["HP"]
-            enemny_max_hp = self.character_details[enemny_name]["Max_hp"]
-            enemy_atttack = self.character_details[enemny_name]["attack"]
             self.player = Player(name, hp,max_hp,attack )
-            self.enemy = Enemy(enemny_name,enemy_hp,enemny_max_hp,enemy_atttack)
             self.game_state = "select_stage"
             self.last_decrease_time = time.time()
     
@@ -265,8 +266,14 @@ class TypingGame:
         elif pyxel.btnp(pyxel.KEY_RIGHT):
             self.current_stage_selection = min(len(self.stages) - 1,self.current_stage_selection + 1)
         elif pyxel.btnp(pyxel.KEY_DOWN):
-            self.stages.pop(self.current_stage_selection)
             self.selected_stage = self.stages[self.current_stage_selection]
+            stage_info = self.stages_details[self.selected_stage]
+            enemy_hp = stage_info["enemy_hp"]
+            enemy_name = stage_info["enemy_name"]
+            enemy_attack = stage_info["enemy_attack"]
+            enemy_max_hp = stage_info["enemy_max_hp"]
+            self.enemy = Enemy(enemy_name,enemy_hp,enemy_max_hp,enemy_attack)
+            self.stages.pop(self.current_stage_selection)
             print("kita?")
             self.game_state= "game"
             
