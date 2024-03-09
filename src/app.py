@@ -13,12 +13,13 @@ import time
 # 四天王４→！自分との闘い！相手は自分！？ステータスがミラーされているぞ
 # ボス→全体的なステータス全て高い
 class Character():
-    def __init__(self, name: str, hp: int, max_hp: int, attack):
+    def __init__(self, name: str, hp: int, max_hp: int, attack,stage_damage:int,heal :int):
         self.name = name
         self.current_hp = hp
         self.max_hp = max_hp
         self.attack = attack
-        
+        self.stage_damage = stage_damage
+        self.heal = heal
     def take_damage(self, damage):
         self.current_hp -= damage
         if self.current_hp < 0:
@@ -29,8 +30,8 @@ class Character():
         return self.current_hp <= 0
 
 class Enemy(Character):
-    def __init__(self, name, hp, max_hp: int,attack):
-        super().__init__(name, hp ,max_hp,attack )
+    def __init__(self, name, hp, max_hp,attack,stage_damage:int,heal ):
+        super().__init__(name, hp ,max_hp,attack,stage_damage,heal )
         
     def take_damage(self, damage):
         self.current_hp -= damage
@@ -40,8 +41,8 @@ class Enemy(Character):
         
 
 class Player(Character):
-    def __init__(self, name, hp, max_hp: int,attack):
-        super().__init__(name, hp,max_hp,attack )
+    def __init__(self, name, hp, max_hp,attack,stage_damage:int,heal):
+        super().__init__(name, hp,max_hp,attack,stage_damage,heal )
         
         
 
@@ -63,21 +64,21 @@ class TypingGame:
         self.selected_character = None
         self.current_selection = 0
         self.character_details = {
-        "炎":{"特徴":"熱い",  "HP":350,"Max_hp":350,"attack":2}, 
-        "水":{"特徴":"涼しい","HP":4,"Max_hp":400,"attack":1},
-        "雷":{"特徴":"速い",  "HP":4,"Max_hp":450,"attack":5},
-        "闇":{"特徴":"暗い",  "HP":5,"Max_hp":550,"attack":4},
-        "光":{"特徴":"眩しい","HP":600,"Max_hp":600,"attack":100},
+        "炎":{"特徴":"熱い",  "HP":350,"Max_hp":350,"attack":10,"stage_damage":0 ,"heal":0}, 
+        "水":{"特徴":"涼しい","HP":400,"Max_hp":400,"attack":8,"stage_damage":0 ,"heal":0},
+        "雷":{"特徴":"速い",  "HP":310,"Max_hp":310,"attack":15,"stage_damage":0 ,"heal":0},
+        "闇":{"特徴":"暗い",  "HP":360,"Max_hp":360,"attack":11,"stage_damage":0 ,"heal":0},
+        "光":{"特徴":"眩しい","HP":370,"Max_hp":370,"attack":12,"stage_damage":0 ,"heal":0},
         }
         self.stages=["1","2","3","4","5"]
         self.selected_stage = None
         self.current_stage_selection = 0
         self.stages_details ={
-        "1":{"ギミック":"間違えたら即死", "enemy_name": "四天王１","enemy_hp":400,"enemy_max_hp":400,"enemy_attack":10,"damage":5,"heal":0},
-        "2":{"ギミック":"スピード勝負","enemy_name":"四天王２","enemy_hp":400,"enemy_max_hp":400,"enemy_attack":10,"damage":1,"heal":0},
-        "3":{"ギミック":"無限に続く戦い","enemy_name":"四天王３","enemy_hp":400,"enemy_max_hp":400,"enemy_attack":10,"damage":5,"heal":10},
-        "4":{"ギミック":"自分との戦い","enemy_name":"四天王４","enemy_hp":400,"enemy_max_hp":400,"enemy_attack":10,"damage":5,"heal":0},
-        "5":{"ギミック":"最後の戦い","enemy_name":"ラスボス","enemy_hp":1500,"enemy_max_hp":1500,"enemy_attack":20,"damage":20,"heal":10},
+        "1":{"ギミック":"スタンダード", "enemy_name": "カモノハシ","enemy_hp":400,"enemy_max_hp":400,"enemy_attack":10,"stage_damage":5,"heal":0},
+        "2":{"ギミック":"スピード勝負","enemy_name":"トラ","enemy_hp":400,"enemy_max_hp":400,"enemy_attack":10,"stage_damage":15,"heal":0},
+        "3":{"ギミック":"ダメージが減る戦い","enemy_name":"カメ","enemy_hp":400,"enemy_max_hp":400,"enemy_attack":10,"stage_damage":5,"heal":10},
+        "4":{"ギミック":"自分との戦い","enemy_name":"人","enemy_hp":self.player.hp,"enemy_max_hp":self.player.hp,"enemy_attack":10,"stage_damage":5,"heal":0},
+        "5":{"ギミック":"最後の戦い","enemy_name":"機械","enemy_hp":1500,"enemy_max_hp":1500,"enemy_attack":20,"stage_damage":10,"heal":11},
         }
         
         
@@ -87,7 +88,7 @@ class TypingGame:
         # self.enemy = Enemy(50, 50, 10)  # 敵キャラクターの初期化
         # pyxel.run(self.update, self.draw)
         # pyxel.init(160, 120, caption="HP Decrease Over Time")
-        self.hp_decrease_interval = 1  # HPが減少する間隔（フレーム数）
+        self.hp_decrease_interval = 1  # HPが減少する間隔（秒数）
         
         
         self.update_odai()
@@ -107,12 +108,12 @@ class TypingGame:
                     
         elif self.game_state == "select_character":
             self.handle_character_selection()
-            # self.game_state = "game"
+            # self.game_state = "play"
             
-        if self.game_state == "select_stage":
+        elif self.game_state == "select_stage":
             self.handle_stage_selection()
         
-        if self.game_state == "game":
+        elif self.game_state == "play":
             self.handle_input()
             if self.typed_word == self.current_word:
                 self.update_odai()
@@ -125,10 +126,11 @@ class TypingGame:
             # # 例: プレイヤーが攻撃を行った場合、敵のHPを減らす
             # if pyxel.btnp(pyxel.KEY_SPACE):  # スペースキーで攻撃
             #     if self.enemy.take_damage(10):  # 敵に10のダメージ
-                    
+            
+            print("stage damage:", self.enemy.stage_damage)
             current_time = time.time()
             if current_time - self.last_decrease_time >= self.hp_decrease_interval:
-                self.player.take_damage(1)  # HPを1減少させる
+                self.player.take_damage(self.enemy.stage_damage)  # HPを1減少させる
                 self.last_decrease_time = current_time
         if self.game_state == "won":
             """"""
@@ -144,7 +146,7 @@ class TypingGame:
             self.font.draw_text(200, 130, "タイピングゲーム", pyxel.frame_count % 16)
             self.font.draw_text(200, 160, "Enterを押して開始",pyxel.frame_count % 16)
         # ゲーム画面の描画（ここでは仮に設定）
-        elif self.game_state == "game":
+        elif self.game_state == "play":
             # self.font.draw_text(50, 60, "ゲーム中...", 7)
             # pyxel.cls(0)
             self.font.draw_text(220,40,self.current_word, 7)
@@ -162,25 +164,39 @@ class TypingGame:
             pyxel.text(50, 40, "タイトル画面", 7)
         elif self.game_state == "select_character":
             # キャラクター選択画面の描画
+            title = "1. プレイヤーを選べ"
+            self.font.draw_text(20, 20, title, 7)
+            pyxel.line(20, 40, 500, 40, 7)
+            
+            pos_x = 40
+            pos_y = 80
+            
             for i, character in enumerate(self.characters):
                 color = 7 if i == self.current_selection else 6
-                self.font.draw_text(10 + i * 100 ,10 , character, color )
+                self.font.draw_text(pos_x + i * 100 ,pos_y , character, color )
                 # pyxel.text(120, 10 + i * 10, character, color)
                 
             selected_character = self.characters[self.current_selection]
             self.draw_character_detail(selected_character)
             
         elif self.game_state == "select_stage":
+            title = "2. ステージを選べ"
+            self.font.draw_text(20, 20, title, 7)
+            pyxel.line(20, 40, 500, 40, 7)
+            
+            pos_x = 40
+            pos_y = 80
+            
             for i,stages in enumerate(self.stages):
                 color = 7 if i ==self.current_stage_selection else 6
-                self.font.draw_text(20+ i * 100,10,stages,color)
+                self.font.draw_text(pos_x + i * 100, pos_y, stages,color)
             selected_stage = self.stages[self.current_stage_selection]
             self.draw_stage_detail(selected_stage)
             
-        elif self.game_state == "game":
+        elif self.game_state == "play":
             # タイピング画面の描画
             self.font.draw_text(0, 80, f"選択されたキャラクター: {self.player.name}", 7)
-            self.font.draw_text(0, self.SCREEN_SIZE[1] - 20, str(self.stages_details[self.selected_stage]), 7)
+            self.font.draw_text(0, self.SCREEN_SIZE[1] - 40, str(self.stages_details[self.selected_stage]), 7)
             # character = Character("炎", 100)
             # character = Character("水", 140)
             # character = Character("雷", 90)
@@ -232,12 +248,15 @@ class TypingGame:
                         self.typed_word += char
                         self.is_correct = True
                         self.enemy.take_damage(self.player.attack)
+                        self.enemy.take_damage(self.enemy.heal-10)
 
                     else:
                         self.is_correct = False
                         
                         print("dou?")
                         self.player.take_damage(self.enemy.attack)
+                        
+                        
                         if self.player.current_hp == 0:
                             self.game_state = "lose"
                         
@@ -256,7 +275,9 @@ class TypingGame:
             hp = self.character_details[name]["HP"]
             max_hp = self.character_details[name]["Max_hp"]
             attack = self.character_details[name]["attack"]
-            self.player = Player(name, hp,max_hp,attack )
+            stage_damage = self.character_details[name]["stage_damage"]
+            heal = self.character_details[name]["heal"]
+            self.player = Player(name, hp,max_hp,attack,stage_damage,heal )
             self.game_state = "select_stage"
             self.last_decrease_time = time.time()
     
@@ -265,17 +286,19 @@ class TypingGame:
             self.current_stage_selection = max(0,self.current_stage_selection - 1)
         elif pyxel.btnp(pyxel.KEY_RIGHT):
             self.current_stage_selection = min(len(self.stages) - 1,self.current_stage_selection + 1)
-        elif pyxel.btnp(pyxel.KEY_DOWN):
+        elif pyxel.btnp(pyxel.KEY_RETURN):
             self.selected_stage = self.stages[self.current_stage_selection]
             stage_info = self.stages_details[self.selected_stage]
             enemy_hp = stage_info["enemy_hp"]
             enemy_name = stage_info["enemy_name"]
             enemy_attack = stage_info["enemy_attack"]
             enemy_max_hp = stage_info["enemy_max_hp"]
-            self.enemy = Enemy(enemy_name,enemy_hp,enemy_max_hp,enemy_attack)
+            enemy_stage_damage = stage_info["stage_damage"]
+            enemy_heal = stage_info["heal"]
+            self.enemy = Enemy(enemy_name,enemy_hp,enemy_max_hp,enemy_attack,enemy_stage_damage,enemy_heal)
             self.stages.pop(self.current_stage_selection)
             print("kita?")
-            self.game_state= "game"
+            self.game_state= "play"
             
     
     def draw_character_detail(self, character):
