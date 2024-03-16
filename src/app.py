@@ -51,13 +51,16 @@ class TypingGame:
         # ウィンドウのサイズとタイトルを設定
         self.SCREEN_SIZE = (500, 300)
         pyxel.init(self.SCREEN_SIZE[0], self.SCREEN_SIZE[1])
-        self.odai_list = ["typing","game","minecraft","python","thelegendofzelda","splatoon","grandtheftauto","google","logicool","steam","steelseries","apexlegends","fortnite","subnautica","citysskyline"]  # ここでcurrent_wordを定義
+        self.odai_list = ["typing","game","minecraft","python","the legend of zelda","splatoon","grand theft auto","google","logicool","steam","steelseries","apex legends","fortnite","subnautica","citys skyline","windows","wakka kimoti yosugi daro","nihon no tyuugakkou","robodann",] 
         self.typed_word = ""
         self.is_correct = True
         # 他の初期化処理
         
-        self.font = BDFRenderer("assets/font/umplus_j12r.bdf")
+        self.font_m = BDFRenderer("assets/font/b16.bdf")
+        self.font_s = BDFRenderer("assets/font/b14.bdf")
+        self.font_l = BDFRenderer("assets/font/b24.bdf")
         # ゲームの状態を管理する変数
+
         self.game_state = "title"
         
         self.characters = ["炎", "水", "雷", "闇", "光"]
@@ -75,21 +78,15 @@ class TypingGame:
         self.current_stage_selection = 0
         self.stages_details ={
         "1":{"ギミック":"スタンダード", "enemy_name": "カモノハシ","enemy_hp":400,"enemy_max_hp":400,"enemy_attack":10,"stage_damage":5,"heal":0},
-        "2":{"ギミック":"スピード勝負","enemy_name":"トラ","enemy_hp":400,"enemy_max_hp":400,"enemy_attack":10,"stage_damage":15,"heal":0},
-        "3":{"ギミック":"ダメージが減る戦い","enemy_name":"カメ","enemy_hp":400,"enemy_max_hp":400,"enemy_attack":10,"stage_damage":5,"heal":10},
-        "4":{"ギミック":"自分との戦い","enemy_name":"人","enemy_hp":self.player.hp,"enemy_max_hp":self.player.hp,"enemy_attack":10,"stage_damage":5,"heal":0},
+        "2":{"ギミック":"スピード勝負","enemy_name":"トラ","enemy_hp":315,"enemy_max_hp":315,"enemy_attack":10,"stage_damage":15,"heal":0},
+        "3":{"ギミック":"持久戦","enemy_name":"カメ","enemy_hp":750,"enemy_max_hp":750,"enemy_attack":10,"stage_damage":5,"heal":10},
+        "4":{"ギミック":"自分との戦い","enemy_name":"人","enemy_hp":None,"enemy_max_hp":None,"enemy_attack":10,"stage_damage":5,"heal":0},
         "5":{"ギミック":"最後の戦い","enemy_name":"機械","enemy_hp":1500,"enemy_max_hp":1500,"enemy_attack":20,"stage_damage":10,"heal":11},
         }
         
-        
-        
-
-        # pyxel.init(160, 120, caption="TypingGame")
-        # self.enemy = Enemy(50, 50, 10)  # 敵キャラクターの初期化
-        # pyxel.run(self.update, self.draw)
-        # pyxel.init(160, 120, caption="HP Decrease Over Time")
+        pyxel.load("assets/resource.pyxres")
         self.hp_decrease_interval = 1  # HPが減少する間隔（秒数）
-        
+        self.clear_stages = set()
         
         self.update_odai()
         # Pyxelアプリを開始
@@ -109,7 +106,7 @@ class TypingGame:
         elif self.game_state == "select_character":
             self.handle_character_selection()
             # self.game_state = "play"
-            
+        
         elif self.game_state == "select_stage":
             self.handle_stage_selection()
         
@@ -119,21 +116,28 @@ class TypingGame:
                 self.update_odai()
             if self.enemy.current_hp == 0:
                 self.game_state = "won"
-            # self.player.take_damage(20)
             if self.player.current_hp == 0:
                 self.game_state = "lose"
-            # # ここにゲームプレイのロジックを実装
-            # # 例: プレイヤーが攻撃を行った場合、敵のHPを減らす
-            # if pyxel.btnp(pyxel.KEY_SPACE):  # スペースキーで攻撃
-            #     if self.enemy.take_damage(10):  # 敵に10のダメージ
-            
             print("stage damage:", self.enemy.stage_damage)
             current_time = time.time()
             if current_time - self.last_decrease_time >= self.hp_decrease_interval:
                 self.player.take_damage(self.enemy.stage_damage)  # HPを1減少させる
                 self.last_decrease_time = current_time
+                
         if self.game_state == "won":
-            """"""
+            clear_stages = list(self.clear_stages)
+            clear_stages.append(self.selected_stage)
+            self.clear_stages = set(clear_stages)
+            
+            if pyxel.btnp(pyxel.KEY_RETURN) :
+                self.player.current_hp = self.player.max_hp
+                self.player.current_hp =(self.player.current_hp + 35 )
+                self.player.max_hp= (self.player.max_hp+ 35)
+                self.player.attack = (self.player.attack + 15)
+                self.game_state = "select_stage"
+                print(self.clear_stages)
+            else:
+                pass
         if self.game_state == "lose":
             """"""
 
@@ -143,29 +147,15 @@ class TypingGame:
     
         # タイトル画面の描画
         if self.game_state == "title":
-            self.font.draw_text(200, 130, "タイピングゲーム", pyxel.frame_count % 16)
-            self.font.draw_text(200, 160, "Enterを押して開始",pyxel.frame_count % 16)
-        # ゲーム画面の描画（ここでは仮に設定）
-        elif self.game_state == "play":
-            # self.font.draw_text(50, 60, "ゲーム中...", 7)
-            # pyxel.cls(0)
-            self.font.draw_text(220,40,self.current_word, 7)
-            self.font.draw_text(220,60,self.typed_word,6 if self.is_correct else 8)
-            # pyxel.text(220, 60, self.typed_word, 11 if self.is_correct else 8)
-            
-            pyxel.rect(5, 10, 200, 20, 7)
-            pyxel.rect(7, 12, int(186 *self.player.current_hp/self.player.max_hp) , 16, 6)
-            pyxel.rect(280,10,200,20,7)
-            pyxel.rect(280,12,int(186*self.enemy.current_hp/self.enemy.max_hp),16,6)
-            
-            
-        if self.game_state == "title":
-            # タイトル画面の描画
             pyxel.text(50, 40, "タイトル画面", 7)
+            self.font_l.draw_text(200, 130, "タイピングゲーム", pyxel.frame_count % 16)
+            self.font_m.draw_text(200, 160, "Enterを押して開始", pyxel.frame_count % 16)
+        # ゲーム画面の描画（ここでは仮に設定）
+        
         elif self.game_state == "select_character":
             # キャラクター選択画面の描画
             title = "1. プレイヤーを選べ"
-            self.font.draw_text(20, 20, title, 7)
+            self.font_m.draw_text(20, 20, title, 7)
             pyxel.line(20, 40, 500, 40, 7)
             
             pos_x = 40
@@ -173,7 +163,7 @@ class TypingGame:
             
             for i, character in enumerate(self.characters):
                 color = 7 if i == self.current_selection else 6
-                self.font.draw_text(pos_x + i * 100 ,pos_y , character, color )
+                self.font_m.draw_text(pos_x + i * 100 ,pos_y , character, color )
                 # pyxel.text(120, 10 + i * 10, character, color)
                 
             selected_character = self.characters[self.current_selection]
@@ -181,7 +171,7 @@ class TypingGame:
             
         elif self.game_state == "select_stage":
             title = "2. ステージを選べ"
-            self.font.draw_text(20, 20, title, 7)
+            self.font_m.draw_text(20, 20, title, 7)
             pyxel.line(20, 40, 500, 40, 7)
             
             pos_x = 40
@@ -189,35 +179,52 @@ class TypingGame:
             
             for i,stages in enumerate(self.stages):
                 color = 7 if i ==self.current_stage_selection else 6
-                self.font.draw_text(pos_x + i * 100, pos_y, stages,color)
+                self.font_m.draw_text(pos_x + i * 100, pos_y, stages,color)
             selected_stage = self.stages[self.current_stage_selection]
             self.draw_stage_detail(selected_stage)
             
         elif self.game_state == "play":
-            # タイピング画面の描画
-            self.font.draw_text(0, 80, f"選択されたキャラクター: {self.player.name}", 7)
-            self.font.draw_text(0, self.SCREEN_SIZE[1] - 40, str(self.stages_details[self.selected_stage]), 7)
-            # character = Character("炎", 100)
-            # character = Character("水", 140)
-            # character = Character("雷", 90)
-            # character = Character("闇", 110)
-            # character = Character("光", 120)
+            # self.font_m.draw_text(50, 60, "ゲーム中...", 7)
+            # pyxel.cls(0)
+            pos_x = 20
+            pos_y = 40
+            
+            word_length = len(self.current_word)
+            
+            self.font_m.draw_text(self.SCREEN_SIZE[0]//2 - word_length*12//4, 40, 
+                                self.current_word, 7)
+            
+            word_bar_x = self.SCREEN_SIZE[0]//2 - word_length*12//4 - 10
+            pyxel.line(word_bar_x, 60, word_bar_x + word_length*12//2 + 20, 60, 6)
+            
+            typed_word_length = len(self.typed_word)
+            self.font_m.draw_text(self.SCREEN_SIZE[0]//2 - typed_word_length*12//4, 70, 
+                                self.typed_word, 6 if self.is_correct else 8)
+            
+            pyxel.rect(5, 10, 200, 20, 7)
+            pyxel.rect(7, 12, int(186 *self.player.current_hp/self.player.max_hp) , 16, 3)
+            pyxel.rect(280,10,200,20,7)
+            pyxel.rect(280,12,int(186*self.enemy.current_hp/self.enemy.max_hp),16,3)
+            
+            # self.font_m.draw_text(pos_x, pos_y, "プレイヤー", 7)
+            self.font_m.draw_text(pos_x, pos_y + 30, f"{self.player.name}", 7)
+            # self.font_m.draw_text(pos_x, self.SCREEN_SIZE[1] - 40, str(self.stages_details[self.selected_stage]), 7)
             hp = self.player.current_hp
-            self.font.draw_text(90,100,str(hp),11)
-            self.font.draw_text(48,100,"残りHP:",11)
-            self.font.draw_text(400,100,str(self.enemy.current_hp),11)
-            self.font.draw_text(390,80,self.enemy.name,11)
-            self.font.draw_text(355,100,"残りHP:",11)
+            self.font_m.draw_text(90,100,str(hp),7)
+            self.font_m.draw_text(48,100,"残りHP:",7)
+            self.font_m.draw_text(400,100,str(self.enemy.current_hp),7)
+            self.font_m.draw_text(400,70,self.enemy.name,7)
+            self.font_m.draw_text(355,100,"残りHP:",7)
         elif self.game_state == "won":
             # 勝利画面の描画
-            self.font.draw_text(190, 100, "W        I        N", pyxel.frame_count % 16)
-            self.font.draw_text(190, 120, "Enterキーを押してね", pyxel.frame_count % 16)
-            if pyxel.btnp(pyxel.KEY_RETURN) :
-                self.game_state = "select_stage"
-            else:
-                pass
+            self.font_m.draw_text(190, 100, "W        I        N", pyxel.frame_count % 16)
+            self.font_m.draw_text(190, 120, "Enterキーを押してね", pyxel.frame_count % 16)
+            self.font_m.draw_text(45, 125, "レベルアップ!", pyxel.frame_count % 16)
+            self.font_m.draw_text(50, 140, "attack 10↑", 7)
+            self.font_m.draw_text(50, 155, "HP     35↑", 7)
+            
         elif self.game_state == "lose":
-            self.font.draw_text(170, 100, "L        O        S        E", pyxel.frame_count % 16)
+            self.font_m.draw_text(170, 100, "L        O        S        E", pyxel.frame_count % 16)
         # if self.game_state == "select_character":
         # # キャラクターのリストを描画
         #     for i, character in enumerate(self.characters):
@@ -226,16 +233,22 @@ class TypingGame:
                 
         #     self.draw_character_detail(self.characters[self.current_selection])
         
-
+        if self.clear_stages == {"1","2","3","4","5"} :
+            self.game_state = "game_clear"
+        if self.game_state =="game_clear":
+            self.font_m.draw_text(120, 100, "G    A    M    E        C    L    E    A    R", pyxel.frame_count % 16)
     def handle_input(self):
         # if not self.is_correct:
         #     return
         
         # A-Z でどのキーが押されたかを調べるループ
-        for key in range(pyxel.KEY_A, pyxel.KEY_Z + 1):
+        key_map = list(range(pyxel.KEY_A, pyxel.KEY_Z + 1))
+        key_map.append(pyxel.KEY_SPACE)
+        for key in key_map:
             # print(key)
             # もし、そのキーが押されていたら
             if pyxel.btnp(key):
+                pyxel.play(0, 0, loop= False)
                 # 数字をアルファべっとに　変換する
                 char = chr(int(key))
                 print(key, char)
@@ -248,9 +261,10 @@ class TypingGame:
                         self.typed_word += char
                         self.is_correct = True
                         self.enemy.take_damage(self.player.attack)
-                        self.enemy.take_damage(self.enemy.heal-10)
+                        # self.enemy.take_damage(self.enemy.heal-10)
 
                     else:
+                        pyxel.play(0, 1, loop= False)
                         self.is_correct = False
                         
                         print("dou?")
@@ -289,15 +303,24 @@ class TypingGame:
         elif pyxel.btnp(pyxel.KEY_RETURN):
             self.selected_stage = self.stages[self.current_stage_selection]
             stage_info = self.stages_details[self.selected_stage]
-            enemy_hp = stage_info["enemy_hp"]
+            if self.clear_stages != {"1","2","3","4"} and self.selected_stage == "5":
+                return
+            
+            if self.selected_stage == "4":
+                enemy_hp = self.player.current_hp
+                enemy_max_hp = self.player.max_hp
+            else:
+                enemy_hp = stage_info["enemy_hp"]
+                enemy_max_hp = stage_info["enemy_max_hp"]
             enemy_name = stage_info["enemy_name"]
             enemy_attack = stage_info["enemy_attack"]
-            enemy_max_hp = stage_info["enemy_max_hp"]
+            
             enemy_stage_damage = stage_info["stage_damage"]
             enemy_heal = stage_info["heal"]
             self.enemy = Enemy(enemy_name,enemy_hp,enemy_max_hp,enemy_attack,enemy_stage_damage,enemy_heal)
             self.stages.pop(self.current_stage_selection)
             print("kita?")
+            self.update_odai()
             self.game_state= "play"
             
     
@@ -314,11 +337,11 @@ class TypingGame:
 
         # 吹き出しの描画（四角形とテキスト）
         pyxel.rect(x, y, width, height, 7)  # 白い背景
-        self.font.draw_text(x + 5, y + 5, detail, 0)  # 黒いテキスト
-        self.font.draw_text(x + 50,y + 5,"HP:",0)
-        self.font.draw_text(x + 70,y + 5,str(hp),0)
-        self.font.draw_text(x + 5, y + 20,"攻撃力:",0)
-        self.font.draw_text(x + 50,y + 20,str(attack),0)
+        self.font_m.draw_text(x + 5, y + 5, detail, 0)  # 黒いテキスト
+        self.font_m.draw_text(x + 50,y + 5,"HP:",0)
+        self.font_m.draw_text(x + 70,y + 5,str(hp),0)
+        self.font_m.draw_text(x + 5, y + 20,"攻撃力:",0)
+        self.font_m.draw_text(x + 50,y + 20,str(attack),0)
     
     def draw_stage_detail(self,stages):
         stages_dict =self.stages_details[stages]
@@ -326,8 +349,8 @@ class TypingGame:
         x,y =190,220
         width, height =140,50
         pyxel.rect(x, y, width, height, 7)  # 白い背景
-        self.font.draw_text(x + 35, y + 5, stages_detail, 0)  # 黒いテキスト
-        self.font.draw_text(x + 5,y + 5,"内容:",0)
+        self.font_m.draw_text(x + 35, y + 5, stages_detail, 0)  # 黒いテキスト
+        self.font_m.draw_text(x + 5,y + 5,"内容:",0)
         
     
 
