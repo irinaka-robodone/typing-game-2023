@@ -51,7 +51,7 @@ class TypingGame:
         # ウィンドウのサイズとタイトルを設定
         self.SCREEN_SIZE = (500, 300)
         pyxel.init(self.SCREEN_SIZE[0], self.SCREEN_SIZE[1])
-        self.odai_list = ["typing","game","minecraft","python","the legend of zelda","splatoon","grand theft auto","google","logicool","steam","steelseries","apex legends","fortnite","subnautica","citys skyline","windows","wakka kimoti yosugi daro","nihon no tyuugakkou","robodann",] 
+        self.odai_list = ["typing","game","minecraft","python","the legend of zelda","splatoon","grand theft auto","google","logicool","steam","steelseries","apex legends","fortnite","subnautica","citys skyline","windows","wakka kimoti yosugi daro","nihon no tyuugakkou","robodann",""] 
         self.typed_word = ""
         self.is_correct = True
         # 他の初期化処理
@@ -77,11 +77,11 @@ class TypingGame:
         self.selected_stage = None
         self.current_stage_selection = 0
         self.stages_details ={
-        "1":{"ギミック":"スタンダード", "enemy_name": "カモノハシ","enemy_hp":400,"enemy_max_hp":400,"enemy_attack":10,"stage_damage":5,"heal":0},
-        "2":{"ギミック":"スピード勝負","enemy_name":"トラ","enemy_hp":315,"enemy_max_hp":315,"enemy_attack":10,"stage_damage":15,"heal":0},
-        "3":{"ギミック":"持久戦","enemy_name":"カメ","enemy_hp":750,"enemy_max_hp":750,"enemy_attack":10,"stage_damage":5,"heal":10},
+        "1":{"ギミック":"スタンダード", "enemy_name": "カモノハシ","enemy_hp":540,"enemy_max_hp":540,"enemy_attack":10,"stage_damage":5,"heal":0},
+        "2":{"ギミック":"スピード勝負","enemy_name":"トラ","enemy_hp":400,"enemy_max_hp":400,"enemy_attack":10,"stage_damage":15,"heal":0},
+        "3":{"ギミック":"持久戦","enemy_name":"カメ","enemy_hp":800,"enemy_max_hp":750,"enemy_attack":10,"stage_damage":5,"heal":10},
         "4":{"ギミック":"自分との戦い","enemy_name":"人","enemy_hp":None,"enemy_max_hp":None,"enemy_attack":10,"stage_damage":5,"heal":0},
-        "5":{"ギミック":"最後の戦い","enemy_name":"機械","enemy_hp":1500,"enemy_max_hp":1500,"enemy_attack":20,"stage_damage":10,"heal":11},
+        "5":{"ギミック":"最後の戦い","enemy_name":"機械","enemy_hp":3000,"enemy_max_hp":3000,"enemy_attack":20,"stage_damage":10,"heal":11},
         }
         
         pyxel.load("assets/resource.pyxres")
@@ -339,9 +339,9 @@ class TypingGame:
         pyxel.rect(x, y, width, height, 7)  # 白い背景
         self.font_m.draw_text(x + 5, y + 5, detail, 0)  # 黒いテキスト
         self.font_m.draw_text(x + 50,y + 5,"HP:",0)
-        self.font_m.draw_text(x + 70,y + 5,str(hp),0)
+        self.font_m.draw_text(x + 75,y + 5,str(hp),0)
         self.font_m.draw_text(x + 5, y + 20,"攻撃力:",0)
-        self.font_m.draw_text(x + 50,y + 20,str(attack),0)
+        self.font_m.draw_text(x + 60,y + 20,str(attack),0)
     
     def draw_stage_detail(self,stages):
         stages_dict =self.stages_details[stages]
@@ -349,7 +349,7 @@ class TypingGame:
         x,y =190,220
         width, height =140,50
         pyxel.rect(x, y, width, height, 7)  # 白い背景
-        self.font_m.draw_text(x + 35, y + 5, stages_detail, 0)  # 黒いテキスト
+        self.font_m.draw_text(x + 45, y + 5, stages_detail, 0)  # 黒いテキスト
         self.font_m.draw_text(x + 5,y + 5,"内容:",0)
         
     
